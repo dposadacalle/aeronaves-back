@@ -11,7 +11,7 @@ import { isEmpty } from '@utils/util';
 class AuthService {
   public users = userModel;
 
-  public async signup(userData: CreateUserDto): Promise<User> {
+  public async signup(userData: CreateUserDto): Promise<any> {
     if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
 
     const findUser: User = await this.users.findOne({ email: userData.email });
@@ -20,22 +20,38 @@ class AuthService {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const createUserData: User = await this.users.create({ ...userData, password: hashedPassword });
 
-    return createUserData;
+    const findUserSave: User = await this.users.findOne({ email: userData.email });
+    const tokenData = this.createToken(findUserSave);
+
+    const objUser = {
+      _id: createUserData._id,
+      email: createUserData.email,
+      password: createUserData.password,
+      token: tokenData.token,
+    };
+
+    return objUser;
   }
 
-  public async login(userData: CreateUserDto): Promise<{ cookie: string; findUser: User }> {
+  public async login(userData: CreateUserDto): Promise<any> {
     if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
 
     const findUser: User = await this.users.findOne({ email: userData.email });
-    if (!findUser) throw new HttpException(409, `You're email ${userData.email} not found`);
+    if (!findUser) return;
 
     const isPasswordMatching: boolean = await bcrypt.compare(userData.password, findUser.password);
     if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
 
     const tokenData = this.createToken(findUser);
-    const cookie = this.createCookie(tokenData);
 
-    return { cookie, findUser };
+    const objUser = {
+      _id: findUser._id,
+      email: findUser.email,
+      password: findUser.password,
+      token: tokenData.token,
+    };
+
+    return objUser;
   }
 
   public async logout(userData: User): Promise<User> {

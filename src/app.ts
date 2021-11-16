@@ -20,6 +20,7 @@ class App {
   public app: express.Application;
   public port: string | number;
   public env: string;
+  public seedDB: any[] = [];
 
   constructor(routes: Routes[]) {
     this.app = express();
@@ -56,15 +57,7 @@ class App {
 
   private initializeMiddlewares() {
     this.app.use(morgan(config.get('log.format'), { stream }));
-    this.app.use(
-      cors({
-        origin: true,
-        methods: ['POST', 'GET', 'PATCH', 'DELETE', 'OPTIONS', 'PUT'],
-        allowedHeaders: ['xAuth', 'Content-Type', 'X-Requested-With'],
-        exposedHeaders: ['xAuth', 'Content-Type', 'Accept'],
-        credentials: true,
-      }),
-    );
+    this.app.use(cors());
     this.app.use(hpp());
     this.app.use(helmet());
     this.app.use(compression());

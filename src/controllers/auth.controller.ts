@@ -3,16 +3,17 @@ import { CreateUserDto } from '@dtos/users.dto';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
 import AuthService from '@services/auth.service';
-import { TokenData } from '../../dist/interfaces/auth.interface';
 
 class AuthController {
   public authService = new AuthService();
 
   public signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      if (req.body == null && req.body == undefined) {
+        return;
+      }
       const userData: CreateUserDto = req.body;
-      const signUpUserData: User = await this.authService.signup(userData);
-
+      const signUpUserData: any = await this.authService.signup(userData);
       res.status(201).json({ data: signUpUserData, message: 'signup' });
     } catch (error) {
       next(error);
@@ -22,9 +23,9 @@ class AuthController {
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData: CreateUserDto = req.body;
-      const { cookie, findUser } = await this.authService.login(userData);
+      const findUser = await this.authService.login(userData);
 
-      res.setHeader('Set-Cookie', [cookie]);
+      if (!findUser) return res.status(401).send("The email doen' exists");
       res.status(200).json({ data: findUser, message: 'login' });
     } catch (error) {
       next(error);
