@@ -1,3 +1,12 @@
-## npm install
+# App Aeronaves
 
-## npx tsc 
+## Installation
+
+```
+npm install
+```
+y 
+
+```
+npx tsc
+```
